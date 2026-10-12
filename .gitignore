@@ -1,0 +1,9 @@
+# Private runtime configuration and receipt evidence must never be published.
+*.json
+*.jsonl
+*.log
+.env
+.env.*
+private/
+secrets/
+node_modules/
