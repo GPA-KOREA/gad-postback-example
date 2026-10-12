@@ -1,13 +1,18 @@
-# GAD 포스트백 웹훅 예제
+# GAD 서버 API·포스트백 예제
 
-Android·iOS·서버 API에서 공통으로 사용하는 **서버 측 포스트백 수신 예제**입니다. 클라이언트 플랫폼이나 SDK에 종속되지 않습니다. 수신 서버 예제는 외부 패키지 없이 Node.js로 실행하며, 같은 HTTP 규격을 다른 서버 언어로 구현할 수도 있습니다.
+Android·iOS 앱의 서버에서 공통으로 사용하는 **서버 API 호출·포스트백 수신 예제**입니다. SDK 설치 없이 Node.js 20 이상에서 실행하며 외부 패키지가 필요하지 않습니다.
 
-**테스트 전용 예제**입니다. 일반 GAD 포스트백을 받아 중복을 구분하고 HTTP 200으로 응답합니다. 실제 사용자에게 포인트를 지급하지 않습니다.
+- **서버 API를 호출하려면:** [비공개 설정 생성·목록 조회·참여·완료 예제](SERVER_API.md)
+- **포스트백을 받으려면:** 아래 수신기 실행 안내
+- **API 스펙을 확인하려면:** [OpenAPI](openapi.yaml) · [공식 서버 API 가이드](https://developers.gpakorea.com/developers/guide/api)
+- **실제 검증 범위를 확인하려면:** [검증 기록](VALIDATION.md)
+
+**수신기는 테스트 전용**입니다. 일반 GAD 포스트백을 받아 중복을 구분하고 HTTP 200으로 응답하며 실제 사용자에게 포인트를 지급하지 않습니다. API 클라이언트는 테스트·운영을 지원합니다. CLI의 운영 검증은 조회만 허용합니다.
 
 Node.js 20 이상을 사용합니다. GAD 서버 프로젝트나 Android/iOS 프로젝트를 받을 필요가 없으며, `npm install`, 운영 환경 파일, DB 접속도 필요하지 않습니다.
 
 - [포스트백 규격](https://developers.gpakorea.com/developers/guide/postback)
-- [테스트 미디어키·콜백 설정](https://developers.gpakorea.com/developers/console#staging)
+- [테스트 미디어키·콜백 설정](https://developers.gpakorea.com/developers/console#callbacks)
 - [SDK 테스트 방법](https://developers.gpakorea.com/developers/guide/testing)
 
 ## 실행
@@ -110,7 +115,7 @@ GAD_POSTBACK_CONFIG="$EXAMPLE_PRIVATE_DIR/receiver.json" node server.mjs
 
 ## 스테이징 통신 자동 검증
 
-`verify-staging.mjs`는 고정된 스테이징 API와 설치형 시험 광고 `staging-ad-3`만 호출합니다. 목록 → 참여 → 완료 → 보상 한 건 → 완료 상태 22 → 실제 웹훅 수신을 확인합니다. **서버 포스트백 통신 검증이며, 네이티브 SDK 실행·실제 앱 설치·운영 광고 검증은 포함하지 않습니다.** 공개 서버 API 가이드는 준비 중입니다.
+`verify-staging.mjs`는 고정된 스테이징 API와 설치형 시험 광고 `staging-ad-3`만 호출합니다. 목록 → 참여 → 완료 → 보상 한 건 → 완료 상태 22 → 실제 웹훅 수신을 확인합니다. **서버 포스트백 통신 검증이며, 네이티브 SDK 실행·실제 앱 설치·운영 광고 검증은 포함하지 않습니다.** [서버 API 호출 예제](SERVER_API.md)와 [공식 가이드](https://developers.gpakorea.com/developers/guide/api)를 함께 확인하세요.
 
 자동 검증을 선택하면 **수신기 시작 전에** 아래 설정을 생성합니다. 앞에서 실행했다면 수신기를 종료하고, 이 설정 생성 후 다시 시작합니다. `receiver.json`의 테스트 키를 먼저 입력해 두세요.
 

@@ -1,0 +1,587 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "GAD 서버 API",
+    "version": "1.0.0",
+    "description": "매체사 서버에서 호출하는 광고 연동 API입니다. 미디어키는 query 또는 JSON body의 media로 전달합니다. 서버에 보관하고 원문 요청·응답을 공개 로그에 남기지 마세요. 실제 리워드 지급은 포스트백 seq로 중복을 막아 처리합니다."
+  },
+  "servers": [
+    {
+      "url": "https://gad-staging.gpakorea.com",
+      "description": "테스트"
+    },
+    {
+      "url": "https://gad.api.gpakorea.com",
+      "description": "운영"
+    }
+  ],
+  "externalDocs": {
+    "description": "연동 가이드",
+    "url": "https://developers.gpakorea.com/developers/guide/api"
+  },
+  "paths": {
+    "/campaign/list": {
+      "get": {
+        "operationId": "list",
+        "summary": "광고 목록",
+        "description": "이 매체에 노출되는 광고 목록을 돌려줍니다.",
+        "responses": {
+          "200": {
+            "description": "API 처리 결과. HTTP 상태와 JSON code를 모두 확인하세요.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": true,
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "HTTP 200이어도 결과 코드 확인. 0: 처리 성공, 상태 조회의 22: 완료, 24: 검수 중"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "integer"
+                          },
+                          "point": {
+                            "type": "integer"
+                          },
+                          "url": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "subtype": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "title": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "mission": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "icon": {
+                            "type": "string"
+                          },
+                          "platform": {
+                            "type": "integer"
+                          },
+                          "detail": {
+                            "type": "object",
+                            "nullable": true,
+                            "additionalProperties": true,
+                            "properties": {
+                              "summary": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "description": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "image1": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "image2": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "image3": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "size": {
+                      "type": "integer"
+                    },
+                    "unit": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "OK",
+                  "items": [
+                    {
+                      "key": "staging-ad-3",
+                      "type": 1,
+                      "subtype": "CPI",
+                      "title": "[스테이징] 설치 광고 3",
+                      "mission": "스테이징 확인용 광고입니다.",
+                      "url": "https://example.com/staging/ad-3",
+                      "point": 5,
+                      "icon": "",
+                      "detail": {
+                        "summary": "[스테이징] 설치 광고 3",
+                        "description": "연동 확인용 설치형 테스트 광고입니다. 설치할 실제 앱은 없습니다."
+                      },
+                      "platform": 3
+                    }
+                  ],
+                  "unit": "포인트",
+                  "size": 1
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "접근 거절 또는 서버 오류. JSON 응답이 아닐 수도 있습니다."
+          }
+        },
+        "parameters": [
+          {
+            "name": "media",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "미디어키"
+            }
+          },
+          {
+            "name": "adid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "기기 식별값. 이미 완료한 광고를 거르는 데 사용하지만 참여 가능 여부를 보장하지 않습니다"
+            }
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "이 type 의 광고만 받습니다. 여러 개면 반복합니다(include=0&include=1)"
+            }
+          },
+          {
+            "name": "exclude",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "이 type 의 광고를 뺍니다. include 가 있으면 무시됩니다"
+            }
+          }
+        ]
+      }
+    },
+    "/campaign/join": {
+      "post": {
+        "operationId": "join",
+        "summary": "광고 참여",
+        "description": "사용자가 광고에 참여를 시작할 때 호출합니다. 응답의 join.url 을 사용자에게 열어 줍니다.\n\njoin.url 은 광고에 따라 GAD 의 참여 페이지(참여형·미션형)이거나 광고 주소(설치형)입니다. 추적 값(gad_tracking_id)이 붙어 있으니 바꾸지 않고 그대로 엽니다.\n\n같은 사용자(uid)나 같은 기기(adid)가 이미 완료한 광고면 22 가 돌아옵니다. 기기는 미디어키가 달라도 같은 기기로 봅니다.\n\n설치형 광고는 같은 IP 에서 여러 번 완료하면 부정 방지 규칙에 따라 더 참여할 수 없습니다(300). ip 에는 호출하는 서버가 아니라 사용자 기기의 IP 를 넣습니다.",
+        "responses": {
+          "200": {
+            "description": "API 처리 결과. HTTP 상태와 JSON code를 모두 확인하세요.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": true,
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "HTTP 200이어도 결과 코드 확인. 0: 처리 성공, 상태 조회의 22: 완료, 24: 검수 중"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "join": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "OK",
+                  "join": {
+                    "id": "cmv17ne8i0001stipokky6bov",
+                    "url": "https://example.com/staging/ad-3?gad_tracking_id=cmv17ne8i0001stipokky6bov"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "접근 거절 또는 서버 오류. JSON 응답이 아닐 수도 있습니다."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "media",
+                  "adKey",
+                  "uid",
+                  "adid"
+                ],
+                "properties": {
+                  "media": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "미디어키"
+                  },
+                  "adKey": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "광고키(광고 목록의 key)"
+                  },
+                  "uid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 48,
+                    "description": "매체의 사용자 ID. 최대 48자. 같은 사용자는 항상 같은 값을 씁니다"
+                  },
+                  "adid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64,
+                    "description": "사용자 기기의 광고 식별값, 최대 64자. Android는 ADID, iOS는 광고 공급사별 지원 식별값을 확인하세요. 비어 있거나 00000000-0000-0000-0000-000000000000 이면 거절됩니다"
+                  },
+                  "data": {
+                    "type": "string",
+                    "description": "매체가 넘기는 문자열. 포스트백의 publisher_data 로 그대로 돌려받습니다"
+                  },
+                  "ip": {
+                    "type": "string",
+                    "description": "사용자 기기의 IP. 서버에서 호출할 때 넣습니다(없으면 요청의 출발지 IP 를 씁니다)"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaign/status": {
+      "get": {
+        "operationId": "status",
+        "summary": "참여 상태 조회",
+        "description": "이 기기(adid)가 같은 대상의 광고를 이미 완료했는지, 제출한 미션이 검수 중인지 조회합니다.\n\n기기(adid) 기준으로 판정합니다. 광고를 완료하면 그 기기의 조회 결과가 22 로 바뀝니다(스테이징 테스트 광고도 같습니다).\n\nmedia, adKey, adid 는 반드시 보냅니다. adKey 가 빠지면 오류 응답(500)이 돌아오고, adid 가 빠지면 기기를 구분하지 못해 다른 기기의 완료 기록으로 22 가 나올 수 있습니다.\n\n같은 사용자(uid)가 기기를 바꿔 다시 참여하는 것은 이 조회가 아니라 광고 참여 호출이 22 로 거절합니다.\n\n0 이 나와도 사용자 중복, 광고 소진, IP 제한 등에 따라 참여 요청은 거절될 수 있습니다.",
+        "responses": {
+          "200": {
+            "description": "API 처리 결과. HTTP 상태와 JSON code를 모두 확인하세요.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": true,
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "HTTP 200이어도 결과 코드 확인. 0: 처리 성공, 상태 조회의 22: 완료, 24: 검수 중"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "참여 가능한 상태입니다."
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "접근 거절 또는 서버 오류. JSON 응답이 아닐 수도 있습니다."
+          }
+        },
+        "parameters": [
+          {
+            "name": "media",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "미디어키"
+            }
+          },
+          {
+            "name": "adKey",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "광고키(광고 목록의 key)"
+            }
+          },
+          {
+            "name": "adid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "사용자 기기의 광고 식별값, 최대 64자. Android는 ADID, iOS는 광고 공급사별 지원 식별값을 확인하세요"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 48,
+              "description": "매체의 사용자 ID. 판정에는 쓰지 않습니다(기기 기준으로 봅니다)"
+            }
+          }
+        ]
+      }
+    },
+    "/campaign/complete": {
+      "post": {
+        "operationId": "complete",
+        "summary": "설치 완료",
+        "description": "직접 완료가 지원되는 GAD 설치형 광고에서 서버가 실제 설치를 확인한 뒤 호출합니다. 적립이 만들어지고 포스트백이 예약됩니다.\n\n먼저 광고 참여를 호출한 사용자만 완료할 수 있습니다. 참여 내역이 없으면 25 입니다.\n\n이미 완료한 광고를 다시 완료하면 22 입니다. 30(이미 적립됨)으로 올 수도 있으니 둘 다 '이미 완료'로 처리합니다.\n\n외부 광고, 미션형, 액션형, 참여 페이지를 거치는 광고는 이 호출로 완료하지 않습니다. 참여형은 참여 페이지에서, 미션형은 미션 제출과 검수로 완료됩니다.\n\n참여 때의 uid·adid 를 유지하세요. 완료 요청을 자동 재시도하거나 동시에 보내지 마세요. 타임아웃은 포스트백과 보상 조회로 확인합니다.",
+        "responses": {
+          "200": {
+            "description": "API 처리 결과. HTTP 상태와 JSON code를 모두 확인하세요.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": true,
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "HTTP 200이어도 결과 코드 확인. 0: 처리 성공, 상태 조회의 22: 완료, 24: 검수 중"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "reward": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "uid": {
+                          "type": "string"
+                        },
+                        "reward_point": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "OK",
+                  "reward": {
+                    "id": "cmv17ob9v000lstipwnqn1qrh",
+                    "uid": "user-0001",
+                    "reward_point": 5
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "접근 거절 또는 서버 오류. JSON 응답이 아닐 수도 있습니다."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "media",
+                  "adKey",
+                  "uid",
+                  "adid"
+                ],
+                "properties": {
+                  "media": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "미디어키"
+                  },
+                  "adKey": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "광고키(광고 목록의 key)"
+                  },
+                  "uid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 48,
+                    "description": "참여 때 보낸 것과 같은 사용자 ID"
+                  },
+                  "adid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64,
+                    "description": "사용자 기기의 광고 식별값, 최대 64자. Android는 ADID, iOS는 광고 공급사별 지원 식별값을 확인하세요"
+                  },
+                  "ip": {
+                    "type": "string",
+                    "description": "사용자 기기의 IP"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaign/reward/list": {
+      "get": {
+        "operationId": "rewards",
+        "summary": "보상 조회",
+        "description": "이 매체 사용자의 최근 1개월 보상 내역을 최신 순서로 조회합니다.\n\n조회 시각에서 달력 기준 1개월 전 이후의 내역이며 페이지 나누기는 제공하지 않습니다.\n\n조회 결과로 리워드를 다시 지급하지 마세요. 실제 지급은 포스트백의 seq 로 중복을 막아 처리합니다.\n\n추가 응답 필드에 미디어키가 포함될 수 있습니다. 원문 응답을 브라우저·공개 로그에 노출하지 마세요.",
+        "responses": {
+          "200": {
+            "description": "API 처리 결과. HTTP 상태와 JSON code를 모두 확인하세요.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": true,
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "HTTP 200이어도 결과 코드 확인. 0: 처리 성공, 상태 조회의 22: 완료, 24: 검수 중"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "uid": {
+                            "type": "string"
+                          },
+                          "reward_point": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "OK",
+                  "items": [
+                    {
+                      "id": "cmv17ob9v000lstipwnqn1qrh",
+                      "uid": "user-0001",
+                      "reward_point": 5
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "접근 거절 또는 서버 오류. JSON 응답이 아닐 수도 있습니다."
+          }
+        },
+        "parameters": [
+          {
+            "name": "media",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "미디어키"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 48,
+              "description": "매체의 사용자 ID. 최대 48자. 같은 사용자는 항상 같은 값을 씁니다"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
